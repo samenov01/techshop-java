@@ -1,0 +1,53 @@
+erDiagram
+    users ||--o{ cart_items : has
+    users ||--o{ orders : places
+    categories ||--o{ products : contains
+    products ||--o{ cart_items : added_to
+    products ||--o{ order_items : included_in
+    orders ||--|{ order_items : contains
+
+    users {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR email UK
+        VARCHAR password_hash
+        VARCHAR role
+    }
+    categories {
+        BIGINT id PK
+        VARCHAR name UK
+    }
+    products {
+        BIGINT id PK
+        BIGINT category_id FK
+        VARCHAR name
+        TEXT description
+        DECIMAL price
+        INT stock
+        BOOLEAN active
+    }
+    cart_items {
+        BIGINT id PK
+        BIGINT user_id FK
+        BIGINT product_id FK
+        INT quantity
+    }
+    orders {
+        BIGINT id PK
+        BIGINT user_id FK
+        DATETIME created_at
+        VARCHAR status
+        VARCHAR payment_status
+        DECIMAL total_amount
+        VARCHAR recipient_name
+        VARCHAR phone
+        VARCHAR delivery_address
+    }
+    order_items {
+        BIGINT id PK
+        BIGINT order_id FK
+        BIGINT product_id FK
+        VARCHAR product_name
+        INT quantity
+        DECIMAL unit_price
+    }
