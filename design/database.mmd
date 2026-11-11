@@ -4,7 +4,7 @@ erDiagram
     categories ||--o{ products : contains
     products ||--o{ cart_items : added_to
     products ||--o{ order_items : included_in
-    orders ||--|{ order_items : contains
+    orders ||--o{ order_items : contains
 
     users {
         BIGINT id PK
@@ -24,7 +24,6 @@ erDiagram
         TEXT description
         DECIMAL price
         INT stock
-        BOOLEAN active
     }
     cart_items {
         BIGINT id PK
@@ -39,9 +38,6 @@ erDiagram
         VARCHAR status
         VARCHAR payment_status
         DECIMAL total_amount
-        VARCHAR recipient_name
-        VARCHAR phone
-        VARCHAR delivery_address
     }
     order_items {
         BIGINT id PK
