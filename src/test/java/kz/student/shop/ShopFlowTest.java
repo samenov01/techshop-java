@@ -1,6 +1,7 @@
 package kz.student.shop;
 
 import kz.student.shop.dto.*;
+import kz.student.shop.config.DemoData;
 import kz.student.shop.exception.ConflictException;
 import kz.student.shop.model.*;
 import kz.student.shop.repository.*;
@@ -226,6 +227,37 @@ class ShopFlowTest {
         orderService.changeStatus(order.id(), "COMPLETED");
         assertThat(statistics.get().revenue()).isEqualByComparingTo("1250.50");
         assertThat(statistics.get().orderCount()).isEqualTo(1);
+    }
+
+    @Test
+    void catalogUpgradePreservesStockAndOrderSnapshots() {
+        productService.update(productId, new ProductRequest("Мышь M1", "Старое описание", new BigDecimal("1250.50"), 1, categoryId));
+        cart.add("one@test.local", new CartRequest(productId, 1));
+        var order = orderService.checkout("one@test.local");
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                new DemoData(users, categories, products, encoder).run(null));
+        Product upgraded = products.findByName("Logitech G PRO X SUPERLIGHT 2").orElseThrow();
+        assertThat(upgraded.getId()).isEqualTo(productId);
+        assertThat(upgraded.getStock()).isZero();
+        var savedOrder = orderService.history("one@test.local").get(0);
+        assertThat(savedOrder.id()).isEqualTo(order.id());
+        assertThat(savedOrder.totalAmount()).isEqualByComparingTo("1250.50");
+        assertThat(savedOrder.items().get(0).name()).isEqualTo("Мышь M1");
+    }
+
+    @Test
+    void catalogRestartDoesNotResetEditedProducts() {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                new DemoData(users, categories, products, encoder).run(null));
+        Product product = products.findByName("VXE Dragonfly R1 Pro").orElseThrow();
+        productService.update(product.getId(), new ProductRequest(product.getName(), "Новое описание", new BigDecimal("19990.00"), 2, categoryId));
+        long count = products.count();
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                new DemoData(users, categories, products, encoder).run(null));
+        Product saved = products.findById(product.getId()).orElseThrow();
+        assertThat(products.count()).isEqualTo(count);
+        assertThat(saved.getStock()).isEqualTo(2);
+        assertThat(saved.getPrice()).isEqualByComparingTo("19990.00");
     }
 
     @Test

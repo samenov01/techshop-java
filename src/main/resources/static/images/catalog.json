@@ -1,0 +1,47 @@
+{
+  "Logitech G PRO X SUPERLIGHT 2": {
+    "image": "/images/products/logitech-superlight-2.webp",
+    "source": "https://www.logitechg.com/en-us/shop/p/pro-x2-superlight-wireless-mouse",
+    "assetSource": "https://resource.logitechg.com/w_800,h_680,c_pad,q_auto,f_webp/d_transparent.gif/content/dam/gaming/en/products/pro-x-superlight-2/new-gallery-assets-2025/pro-x-superlight-2-mice-top-angle-white-gallery-1.png"
+  },
+  "VXE Dragonfly R1 Pro": {
+    "image": "/images/products/vxe-r1-pro.jpg",
+    "source": "https://www.atk.store/products/vxe-dragonfly-r1-series-wireless-mouse",
+    "assetSource": "https://cdn.shopify.com/s/files/1/0691/4942/5882/files/R1_Black.jpg?v=1756979095&width=800"
+  },
+  "VGN Dragonfly F1 Pro": {
+    "image": "/images/products/vgn-f1-pro.png",
+    "source": "https://vgnlab.com/products/vgn-dragonfly-f1-series-wireless-mouse",
+    "assetSource": "https://cdn.shopify.com/s/files/1/0775/4927/3398/files/d0d8bed28284860354c18286fe331916.png?v=1751017964&width=800"
+  },
+  "Logitech G515 LIGHTSPEED TKL": {
+    "image": "/images/products/logitech-g515.webp",
+    "source": "https://www.logitechg.com/en-us/shop/p/g515-tkl-wireless-keyboard",
+    "assetSource": "https://resource.logitechg.com/w_800,h_680,c_pad,q_auto,f_webp/d_transparent.gif/content/dam/gaming/en/products/g515-lightspeed-tkl/gallery/g515-keyboard-black-gallery-1-us.png"
+  },
+  "VGN V87 V2": {
+    "image": "/images/products/vgn-v87-v2.jpg",
+    "source": "https://vgnlab.com/products/vgn-v87-v2-wireless-mechanical-gaming-keyboard",
+    "assetSource": "https://cdn.shopify.com/s/files/1/0775/4927/3398/files/ce315e972c541e4953f1a898508b59ec.jpg?v=1762153398&width=800"
+  },
+  "VGN S99": {
+    "image": "/images/products/vgn-s99.jpg",
+    "source": "https://vgnlab.com/products/vgn-s99-wireless-mechanical-keyboard",
+    "assetSource": "https://cdn.shopify.com/s/files/1/0775/4927/3398/files/7ab0ba129d2caea09b17e25cfd6a1500.jpg?v=1692696021&width=800"
+  },
+  "Logitech G PRO X 2 LIGHTSPEED": {
+    "image": "/images/products/logitech-pro-x2.webp",
+    "source": "https://www.logitechg.com/en-us/shop/p/pro-x-2-wireless-headset",
+    "assetSource": "https://resource.logitechg.com/w_800,h_680,c_pad,q_auto,f_webp/d_transparent.gif/content/dam/gaming/en/products/pro-x-2-lightspeed/gallery/gallery-1-pro-x-2-lightspeed-gaming-headset-black.png"
+  },
+  "HyperX Cloud III": {
+    "image": "/images/products/hyperx-cloud-iii.jpg",
+    "source": "https://uk.hyperx.com/products/hyperx-cloud-iii-wired-gaming-headset",
+    "assetSource": "https://uk.hyperx.com/cdn/shop/files/hyperx_cloud_iii_red_66x0049_main_1.jpg?v=1791190907&width=800"
+  },
+  "Logitech G435 LIGHTSPEED": {
+    "image": "/images/products/logitech-g435.webp",
+    "source": "https://www.logitechg.com/en-us/shop/p/g435-wireless-bluetooth-gaming-headset",
+    "assetSource": "https://resource.logitechg.com/w_800,h_680,c_pad,q_auto,f_webp/d_transparent.gif/content/dam/gaming/en/products/g435/2025/gallery/g435-3qtr-front-left-angle-black-gallery-1.png"
+  }
+}

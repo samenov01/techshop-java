@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TechShop — компьютерные аксессуары для работы, учёбы и отдыха.">
-    <title>TechShop — ваш рабочий ритм</title>
+    <meta name="description" content="TechShop — мыши, клавиатуры и гарнитуры Logitech, VXE, VGN и HyperX.">
+    <title>TechShop — игровая периферия</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/css/style.css">
     <script defer src="/vendor/chart.umd.min.js"></script>
@@ -30,23 +30,48 @@
     <main id="main" class="container" tabindex="-1">
         <section id="catalog-page" class="page">
             <div class="hero">
-                <div class="hero-copy"><p class="eyebrow">ДЛЯ РАБОТЫ, УЧЁБЫ И ОТДЫХА</p><h1>Ваше место.<br>Ваш ритм.</h1><p>Мыши, клавиатуры и наушники,<br>с которыми каждый день удобнее.</p><a class="button dark" href="#products-anchor">Выбрать своё <span aria-hidden="true">↗</span></a></div>
-                <div class="hero-art" aria-hidden="true"><div class="hero-circle"></div><img class="hero-keyboard" src="/images/keyboard.svg" alt=""><img class="hero-mouse" src="/images/mouse.svg" alt=""><span class="hero-note">МАЛЕНЬКИЕ ДЕТАЛИ.<br>БОЛЬШАЯ РАЗНИЦА.</span></div>
+                <div class="hero-copy"><p class="eyebrow">Logitech · VXE · VGN · HyperX</p><h1>Мышь, клавиатура.<br>Ваша игра.</h1><p>Лёгкие мыши, механические клавиатуры<br>и гарнитуры для вашего сетапа</p><a class="button dark" href="#products-anchor">Смотреть каталог <span aria-hidden="true">↗</span></a></div>
+                <div class="hero-art"><img class="hero-device" src="/images/products/logitech-superlight-2.webp" width="800" height="680" alt="Logitech G PRO X SUPERLIGHT 2" fetchpriority="high"><span class="hero-note">Logitech G PRO X SUPERLIGHT 2<br>LIGHTSPEED · 60 г</span></div>
             </div>
-            <div class="section-heading" id="products-anchor"><div><p class="eyebrow">НАЙДИТЕ ТО, ЧТО ПОДХОДИТ ВАМ</p><h2>Каталог товаров <span id="product-count" class="count-label"></span></h2></div></div>
+            <div class="section-heading" id="products-anchor"><div><p class="eyebrow">Мыши, клавиатуры и гарнитуры</p><h2>Каталог товаров <span id="product-count" class="count-label"></span></h2></div></div>
             <div class="catalog-layout">
-                <aside class="filters"><form id="filter-form"><h3>Фильтры</h3><label for="category-filter">Категория</label><select id="category-filter" name="categoryId"><option value="">Все категории</option></select><label>Цена, тг</label><div class="price-range"><input aria-label="Минимальная цена" name="minPrice" type="number" min="0" step="0.01" placeholder="От"><span>—</span><input aria-label="Максимальная цена" name="maxPrice" type="number" min="0" step="0.01" placeholder="До"></div><button class="button dark" type="submit">Применить</button><button class="text-button" type="reset">Сбросить фильтры</button></form><div class="filter-note"><span>01 / ПРОСТОЙ ВЫБОР</span><p>Актуальная цена и наличие — в каждой карточке.</p></div></aside>
+                <aside class="filters"><form id="filter-form"><h3>Фильтры</h3><label for="category-filter">Категория</label><select id="category-filter" name="categoryId"><option value="">Все категории</option></select><label>Цена, тг</label><div class="price-range"><input aria-label="Минимальная цена" name="minPrice" type="number" min="0" step="0.01" placeholder="От"><span>—</span><input aria-label="Максимальная цена" name="maxPrice" type="number" min="0" step="0.01" placeholder="До"></div><button class="button dark" type="submit">Применить</button><button class="text-button" type="reset">Сбросить фильтры</button></form><div class="filter-note"><span>Выбор периферии</span><p>Сравните модели по описанию и цене</p></div></aside>
                 <div class="catalog-content"><div class="catalog-toolbar"><form id="search-form" class="search"><input id="search-input" type="search" placeholder="Найти товар" aria-label="Поиск по названию"><button type="submit" aria-label="Найти">⌕</button></form><label class="sort-label"><span class="sr-only">Сортировка</span><select id="sort-select"><option value="newest">Сначала новые</option><option value="priceAsc">Сначала дешевле</option><option value="priceDesc">Сначала дороже</option><option value="nameAsc">По названию: А–Я</option><option value="nameDesc">По названию: Я–А</option></select></label></div><div id="products" class="product-grid" aria-live="polite"><p class="loading">Загружаем товары…</p></div></div>
             </div>
         </section>
-        <section id="cart-page" class="page" hidden><div class="page-heading"><p class="eyebrow">ВАШ ВЫБОР</p><h1>Корзина</h1><p>Проверьте товары перед оформлением заказа.</p></div><div id="cart-content"></div></section>
-        <section id="orders-page" class="page" hidden><div class="page-heading"><p class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</p><h1>Мои заказы</h1><p>Все покупки и их текущий статус в одном месте.</p></div><div id="orders-content"></div></section>
-        <section id="admin-page" class="page" hidden><div class="page-heading"><p class="eyebrow">TECHSHOP / УПРАВЛЕНИЕ</p><h1>Панель администратора</h1><p>Товары, заказы и продажи магазина.</p></div><div id="admin-content"></div></section>
+        <section id="cart-page" class="page" hidden><div class="page-heading"><p class="eyebrow">Ваш выбор</p><h1>Корзина</h1><p>Проверьте товары перед оформлением заказа.</p></div><div id="cart-content"></div></section>
+        <section id="orders-page" class="page" hidden><div class="page-heading"><p class="eyebrow">Личный кабинет</p><h1>Мои заказы</h1><p>Все покупки и их текущий статус в одном месте.</p></div><div id="orders-content"></div></section>
+        <section id="admin-page" class="page" hidden><div class="page-heading"><p class="eyebrow">TechShop / управление</p><h1>Панель администратора</h1><p>Товары, заказы и продажи магазина.</p></div><div id="admin-content"></div></section>
     </main>
-    <footer class="footer"><div class="container footer-row"><a class="brand" href="#catalog">techshop<span>.</span></a><p>Всё для вашего рабочего места.</p><span>Учебный интернет-магазин</span></div></footer>
-    <dialog id="auth-dialog"><div class="dialog-heading"><h2 id="auth-title">С возвращением</h2><button type="button" class="icon-button" data-close="auth-dialog" aria-label="Закрыть">×</button></div><p id="auth-subtitle" class="muted">Войдите, чтобы сохранить корзину и оформить заказ.</p><form id="auth-form"><label id="name-field" hidden>Имя<input name="name" autocomplete="name" maxlength="100"></label><label>Email<input name="email" type="email" autocomplete="username" maxlength="255" required></label><label>Пароль<input name="password" type="password" autocomplete="current-password" minlength="8" maxlength="60" required></label><p class="form-error" id="auth-error" role="alert"></p><button class="button dark full" type="submit" id="auth-submit">Войти</button></form><p class="auth-switch"><span id="auth-switch-text">Ещё нет аккаунта?</span> <button class="text-button" id="auth-switch" type="button">Зарегистрироваться</button></p></dialog>
+    <footer class="footer"><div class="container footer-row"><a class="brand" href="#catalog">techshop<span>.</span></a><p>Logitech, VXE, VGN и HyperX</p><span>Демонстрационный магазин · Без списаний</span></div></footer>
+    <dialog id="auth-dialog"><div class="dialog-heading"><h2 id="auth-title">Вход в аккаунт</h2><button type="button" class="icon-button" data-close="auth-dialog" aria-label="Закрыть">×</button></div><p id="auth-subtitle" class="muted">Войдите, чтобы сохранить корзину и оформить заказ.</p><form id="auth-form"><label id="name-field" hidden>Имя<input name="name" autocomplete="name" maxlength="100"></label><label>Email<input name="email" type="email" autocomplete="username" maxlength="255" required></label><label>Пароль<input name="password" type="password" autocomplete="current-password" minlength="8" maxlength="60" required></label><p class="form-error" id="auth-error" role="alert"></p><button class="button dark full" type="submit" id="auth-submit">Войти</button></form><p class="auth-switch"><span id="auth-switch-text">Ещё нет аккаунта?</span> <button class="text-button" id="auth-switch" type="button">Зарегистрироваться</button></p></dialog>
     <dialog id="product-dialog"><div class="dialog-heading"><h2 id="product-dialog-title">Добавить товар</h2><button type="button" class="icon-button" data-close="product-dialog" aria-label="Закрыть">×</button></div><form id="product-form"><input name="id" type="hidden"><label>Название<input name="name" maxlength="150" required></label><label>Категория<select name="categoryId" id="edit-category" required></select></label><label>Описание<textarea name="description" rows="3" maxlength="5000" required></textarea></label><div class="form-row"><label>Цена, тг<input name="price" type="number" min="0.01" max="9999999999.99" step="0.01" required></label><label>Остаток<input name="stock" type="number" min="0" max="2147483647" step="1" required></label></div><p class="form-error" id="product-error" role="alert"></p><button class="button dark full" type="submit">Сохранить товар</button></form></dialog>
     <dialog id="category-dialog"><div class="dialog-heading"><h2>Категория</h2><button type="button" class="icon-button" data-close="category-dialog" aria-label="Закрыть">×</button></div><form id="category-form"><input name="id" type="hidden"><label>Название<input name="name" maxlength="100" required></label><p class="form-error" id="category-error" role="alert"></p><button class="button dark full" type="submit">Сохранить</button></form></dialog>
+    <div class="floating-cart">
+        <button id="floating-cart-button" class="floating-cart-button" type="button" aria-label="Открыть корзину" aria-controls="mini-cart" aria-expanded="false">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span id="floating-cart-count" hidden>0</span>
+        </button>
+        <section id="mini-cart" class="mini-cart" role="dialog" aria-modal="false" aria-labelledby="mini-cart-title" hidden>
+            <div class="mini-cart-heading"><h2 id="mini-cart-title">Корзина <span id="mini-cart-items-count"></span></h2><button id="mini-cart-close" type="button" class="icon-button" aria-label="Закрыть корзину">×</button></div>
+            <div id="mini-cart-content"></div>
+        </section>
+    </div>
+    <dialog id="payment-dialog" class="payment-dialog" aria-labelledby="payment-title">
+        <div class="dialog-heading"><div><p class="eyebrow">TechShop / оплата</p><h2 id="payment-title">Оплата заказа</h2></div><button type="button" class="icon-button" data-close="payment-dialog" aria-label="Закрыть оплату">×</button></div>
+        <div class="payment-order"><span id="payment-order-label"></span><strong id="payment-amount"></strong></div>
+        <p class="payment-mode">Демо-режим · Деньги не списываются</p>
+        <form id="payment-form" autocomplete="off">
+            <label>Номер карты<input name="cardNumber" type="text" inputmode="numeric" maxlength="23" placeholder="4242 4242 4242 4242" required aria-describedby="payment-test-hint"></label>
+            <div class="form-row"><label>Срок действия<input name="expiry" type="text" inputmode="numeric" maxlength="5" placeholder="ММ/ГГ" required></label><label>CVC<input name="cvc" type="password" inputmode="numeric" maxlength="3" placeholder="123" required></label></div>
+            <label>Имя на карте<input name="cardholder" type="text" maxlength="60" placeholder="IVAN IVANOV" required></label>
+            <button type="button" class="text-button" id="fill-test-card">Заполнить тестовой картой</button>
+            <p id="payment-test-hint" class="payment-hint">Используйте только тестовую карту 4242 4242 4242 4242. Данные карты остаются в браузере и не сохраняются</p>
+            <p id="payment-error" class="form-error" role="alert"></p>
+            <button type="submit" class="button dark full" id="payment-submit">Оплатить</button>
+        </form>
+        <div id="payment-success" class="payment-success" hidden><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><h3>Оплата прошла</h3><p id="payment-success-message"></p><button class="button dark full" type="button" data-close="payment-dialog">Готово</button></div>
+    </dialog>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </body>
 </html>

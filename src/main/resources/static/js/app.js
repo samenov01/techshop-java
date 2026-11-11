@@ -14,8 +14,11 @@ let adminTab = 'products';
 let chart = null;
 let toastTimer;
 let catalogRequest = 0;
+let catalogAssets = {};
+let pendingPayment = null;
 
-function productImage(category) {
+function productImage(productName, category = '') {
+    if (catalogAssets[productName]) return catalogAssets[productName].image;
     const name = category.toLowerCase();
     if (name.includes('клавиат')) return '/images/keyboard.svg';
     if (name.includes('науш')) return '/images/headphones.svg';
@@ -76,7 +79,12 @@ function updateHeader() {
     $('#account-button').title = currentUser ? currentUser.email : 'Войти в аккаунт';
     $('#logout-button').hidden = !currentUser;
     $('#admin-link').hidden = currentUser?.role !== 'ADMIN';
-    $('#cart-count').textContent = currentUser ? cart.count : 0;
+    const count = currentUser ? cart.count : 0;
+    $('#cart-count').textContent = count;
+    $('#floating-cart-count').textContent = count;
+    $('#floating-cart-count').hidden = count === 0;
+    $('#floating-cart-button').setAttribute('aria-label', 'Корзина, товаров: ' + count);
+    renderMiniCart();
 }
 
 function emptyState(title, description, action = '') {
@@ -110,7 +118,7 @@ async function loadCatalog() {
         if (requestId !== catalogRequest) return;
         $('#product-count').textContent = products.length;
         $('#products').innerHTML = products.length ? products.map(product => `<article class="product-card">
-            <div class="product-image"><span class="stock ${product.stock ? '' : 'empty'}">${product.stock ? 'В наличии · ' + product.stock : 'Нет в наличии'}</span><img src="${productImage(product.categoryName)}" alt="" loading="lazy"></div>
+            <div class="product-image ${product.categoryName.toLowerCase().includes('клавиат') ? 'keyboard-image' : ''}"><span class="stock ${product.stock ? '' : 'empty'}">${product.stock ? 'В наличии · ' + product.stock : 'Нет в наличии'}</span><img src="${productImage(product.name, product.categoryName)}" alt="" loading="lazy"></div>
             <div class="product-body"><p class="category-label">${escapeHtml(product.categoryName)}</p><h3>${escapeHtml(product.name)}</h3><details><summary>О товаре</summary><p>${escapeHtml(product.description)}</p></details>
             <div class="product-bottom"><span class="price">${money(product.price)}</span><button class="add-button" data-action="add" data-id="${product.id}" aria-label="Добавить ${escapeHtml(product.name)} в корзину" title="В корзину" ${product.stock === 0 ? 'disabled' : ''}>+</button></div></div>
         </article>`).join('') : emptyState('Ничего не найдено', 'Попробуйте другое название или измените фильтры.', '<button class="button" data-action="reset-filters">Сбросить фильтры</button>');
@@ -140,9 +148,9 @@ function renderCart() {
     }
     const unavailable = cart.items.some(item => item.quantity > item.stock);
     $('#cart-content').innerHTML = `<div class="cart-layout"><div class="cart-list">${cart.items.map(item => `<div class="cart-row">
-        <img src="${productImage(item.categoryName)}" alt=""><div class="cart-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)} за шт.</p>${item.quantity > item.stock ? '<p class="form-error">Осталось на складе: ' + item.stock + '</p>' : ''}<button class="text-button" data-action="remove" data-id="${item.productId}">Удалить</button></div>
+        <img src="${productImage(item.name, item.categoryName)}" alt=""><div class="cart-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)} за шт.</p>${item.quantity > item.stock ? '<p class="form-error">Осталось на складе: ' + item.stock + '</p>' : ''}<button class="text-button" data-action="remove" data-id="${item.productId}">Удалить</button></div>
         <div class="quantity"><button data-action="quantity" data-id="${item.productId}" data-value="${item.quantity - 1}" aria-label="Уменьшить количество" ${item.quantity <= 1 ? 'disabled' : ''}>−</button><input type="number" min="1" max="10000" step="1" value="${item.quantity}" data-quantity-id="${item.productId}" aria-label="Количество ${escapeHtml(item.name)}"><button data-action="quantity" data-id="${item.productId}" data-value="${item.quantity + 1}" aria-label="Увеличить количество" ${item.quantity >= item.stock || item.quantity >= 10000 ? 'disabled' : ''}>+</button></div><span class="price">${money(item.subtotal)}</span></div>`).join('')}</div>
-        <aside class="summary"><h3>Ваш заказ</h3><div class="summary-line"><span>Итого</span><strong>${money(cart.total)}</strong></div><button class="button dark full" data-action="checkout" ${unavailable ? 'disabled' : ''}>Оформить заказ →</button><p>${unavailable ? 'Измените количество или удалите товары, которых не хватает.' : 'Наличие и итоговая сумма проверяются при оформлении.'}</p><p>Оплата учебная. Реальные деньги не списываются.</p></aside></div>`;
+        <aside class="summary"><h3>Ваш заказ</h3><div class="summary-line"><span>Итого</span><strong>${money(cart.total)}</strong></div><button class="button dark full" data-action="checkout" ${unavailable ? 'disabled' : ''}>Оформить заказ →</button><p>${unavailable ? 'Измените количество или удалите товары, которых не хватает.' : 'Наличие и итоговая сумма проверяются при оформлении.'}</p><p>После оформления откроется окно оплаты. Списаний нет</p></aside></div>`;
 }
 
 function orderCard(order, admin = false) {
@@ -150,11 +158,11 @@ function orderCard(order, admin = false) {
     const next = { NEW: 'CONFIRMED', CONFIRMED: 'SHIPPED', SHIPPED: 'COMPLETED' }[order.status];
     let actions = '';
     if (admin && next) actions += `<button class="button small dark" data-action="status" data-id="${order.id}" data-value="${next}">${{ CONFIRMED: 'Подтвердить', SHIPPED: 'Отправить', COMPLETED: 'Завершить' }[next]}</button>`;
-    if (!admin && changeable && order.paymentStatus === 'UNPAID') actions += `<button class="button small dark" data-action="pay" data-id="${order.id}">Учебная оплата</button>`;
+    if (!admin && changeable && order.paymentStatus === 'UNPAID') actions += `<button class="button small dark" data-action="pay" data-id="${order.id}">Оплатить</button>`;
     if (changeable) actions += `<button class="button small danger" data-action="${admin ? 'status' : 'cancel'}" data-value="CANCELLED" data-id="${order.id}">Отменить</button>`;
     return `<article class="order-card"><div class="order-heading"><div><h3>Заказ № ${order.id}</h3><p>${new Date(order.createdAt).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' })}${admin ? ' · ' + escapeHtml(order.customerName) : ''}</p></div><div class="badges"><span class="badge ${order.status === 'CANCELLED' ? 'cancelled' : ''}">${statuses[order.status]}</span><span class="badge">${payments[order.paymentStatus]}</span></div></div>
         ${order.items.map(item => `<div class="order-item"><span>${escapeHtml(item.name)} × ${item.quantity}</span><span>${money(item.unitPrice * item.quantity)}</span></div>`).join('')}
-        <div class="order-footer"><span class="price">${money(order.totalAmount)}</span>${actions}</div>${!admin && order.paymentStatus === 'UNPAID' && changeable ? '<p class="payment-note">Подтверждение оплаты — симуляция, деньги не списываются.</p>' : ''}</article>`;
+        <div class="order-footer"><span class="price">${money(order.totalAmount)}</span>${actions}</div>${!admin && order.paymentStatus === 'UNPAID' && changeable ? '<p class="payment-note">Демо-режим оплаты · Деньги не списываются</p>' : ''}</article>`;
 }
 
 async function renderOrders() {
@@ -186,6 +194,7 @@ async function renderAdmin() {
 }
 
 async function route() {
+    setMiniCart(false);
     const routeName = location.hash.slice(1);
     currentPage = ['cart', 'orders', 'admin'].includes(routeName) ? routeName : 'catalog';
     document.querySelectorAll('.page').forEach(page => page.hidden = page.id !== currentPage + '-page');
@@ -204,6 +213,7 @@ async function route() {
 }
 
 function showAuth() {
+    setMiniCart(false);
     $('#auth-error').textContent = '';
     $('#auth-dialog').showModal();
 }
@@ -262,12 +272,20 @@ async function action(button) {
         if (name === 'checkout') {
             const order = await api('/orders', { method: 'POST' });
             await loadCart();
+            setMiniCart(false);
             toast('Заказ № ' + order.id + ' оформлен');
             location.hash = 'orders';
+            openPayment(order);
         }
-        if (name === 'pay' || name === 'cancel') {
-            await api('/orders/' + id + '/' + name, { method: 'POST' });
-            toast(name === 'pay' ? 'Учебная оплата подтверждена' : 'Заказ отменён');
+        if (name === 'pay') {
+            const orders = await api('/orders');
+            const order = orders.find(item => item.id === id);
+            if (!order) throw new Error('Заказ не найден');
+            openPayment(order);
+        }
+        if (name === 'cancel') {
+            await api('/orders/' + id + '/cancel', { method: 'POST' });
+            toast('Заказ отменён');
             await renderOrders();
         }
         if (name === 'status') {
@@ -286,6 +304,125 @@ async function action(button) {
     }
 }
 
+function renderMiniCart() {
+    $('#mini-cart-items-count').textContent = currentUser && cart.count ? '(' + cart.count + ')' : '';
+    if (!currentUser) {
+        $('#mini-cart-content').innerHTML = '<div class="mini-cart-empty"><p>Войдите, чтобы увидеть свою корзину</p><button class="button dark full" data-action="login">Войти</button></div>';
+        return;
+    }
+    if (!cart.items.length) {
+        $('#mini-cart-content').innerHTML = '<div class="mini-cart-empty"><p>Корзина пуста</p><span>Добавьте товары из каталога</span></div>';
+        return;
+    }
+    const unavailable = cart.items.some(item => item.quantity > item.stock);
+    $('#mini-cart-content').innerHTML = `<div class="mini-cart-list">${cart.items.map(item => `<div class="mini-cart-row"><img src="${productImage(item.name, item.categoryName)}" alt=""><div class="mini-cart-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)}</p><div class="mini-cart-controls"><div class="quantity"><button type="button" data-action="quantity" data-id="${item.productId}" data-value="${item.quantity - 1}" aria-label="Уменьшить количество ${escapeHtml(item.name)}" ${item.quantity <= 1 ? 'disabled' : ''}>−</button><span>${item.quantity}</span><button type="button" data-action="quantity" data-id="${item.productId}" data-value="${item.quantity + 1}" aria-label="Увеличить количество ${escapeHtml(item.name)}" ${item.quantity >= item.stock || item.quantity >= 10000 ? 'disabled' : ''}>+</button></div><button type="button" class="text-button" data-action="remove" data-id="${item.productId}">Удалить</button></div>${item.quantity > item.stock ? '<p class="form-error">Доступно: ' + item.stock + '</p>' : ''}</div></div>`).join('')}</div><div class="mini-cart-footer"><div><span>Итого</span><strong>${money(cart.total)}</strong></div><button class="button dark full" data-action="checkout" ${unavailable ? 'disabled' : ''}>Оформить заказ</button><a class="mini-cart-link" href="#cart">Открыть корзину</a></div>`;
+}
+
+function setMiniCart(open, restoreFocus = false) {
+    $('#mini-cart').hidden = !open;
+    $('#floating-cart-button').setAttribute('aria-expanded', String(open));
+    if (open) $('#mini-cart-close').focus();
+    else if (restoreFocus) $('#floating-cart-button').focus();
+}
+
+$('#floating-cart-button').addEventListener('click', async () => {
+    const opening = $('#mini-cart').hidden;
+    setMiniCart(opening);
+    if (!opening || !currentUser) return;
+    try { await loadCart(); }
+    catch (error) { toast(error.message, true); }
+});
+$('#mini-cart-close').addEventListener('click', () => setMiniCart(false, true));
+document.addEventListener('click', event => {
+    if (!event.target.closest('.floating-cart') && !$('#mini-cart').hidden) setMiniCart(false);
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !$('#mini-cart').hidden) {
+        setMiniCart(false, true);
+        event.preventDefault();
+    }
+});
+
+function openPayment(order) {
+    setMiniCart(false);
+    pendingPayment = { id: order.id, amount: order.totalAmount };
+    $('#payment-form').reset();
+    $('#payment-form').hidden = false;
+    $('#payment-success').hidden = true;
+    $('#payment-error').textContent = '';
+    $('#payment-order-label').textContent = 'Заказ № ' + order.id;
+    $('#payment-amount').textContent = money(order.totalAmount);
+    $('#payment-submit').textContent = 'Оплатить ' + money(order.totalAmount);
+    $('#payment-submit').disabled = false;
+    $('#payment-dialog').showModal();
+}
+
+$('#fill-test-card').addEventListener('click', () => {
+    const form = $('#payment-form');
+    form.elements.cardNumber.value = '4242 4242 4242 4242';
+    const expiry = new Date();
+    expiry.setFullYear(expiry.getFullYear() + 3);
+    form.elements.expiry.value = String(expiry.getMonth() + 1).padStart(2, '0') + '/' + String(expiry.getFullYear()).slice(-2);
+    form.elements.cvc.value = '123';
+    form.elements.cardholder.value = 'DEMO CUSTOMER';
+    $('#payment-error').textContent = '';
+});
+
+$('#payment-form').elements.cardNumber.addEventListener('input', event => {
+    event.target.value = event.target.value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
+});
+$('#payment-form').elements.expiry.addEventListener('input', event => {
+    const digits = event.target.value.replace(/\D/g, '').slice(0, 4);
+    event.target.value = digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+});
+$('#payment-form').elements.cvc.addEventListener('input', event => {
+    event.target.value = event.target.value.replace(/\D/g, '').slice(0, 3);
+});
+
+$('#payment-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const errorElement = $('#payment-error');
+    errorElement.textContent = '';
+    if (!pendingPayment) return;
+    const number = form.elements.cardNumber.value.replace(/\D/g, '');
+    if (number !== '4242424242424242') {
+        errorElement.textContent = 'В демо-режиме доступна тестовая карта 4242 4242 4242 4242';
+        return;
+    }
+    const parts = form.elements.expiry.value.match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+    const now = new Date();
+    if (!parts || new Date(2000 + Number(parts[2]), Number(parts[1]), 1) <= now) {
+        errorElement.textContent = 'Проверьте срок действия карты';
+        return;
+    }
+    if (!/^\d{3}$/.test(form.elements.cvc.value) || !form.elements.cardholder.value.trim()) {
+        errorElement.textContent = 'Укажите три цифры CVC и имя на карте';
+        return;
+    }
+    const button = $('#payment-submit');
+    button.disabled = true;
+    button.textContent = 'Обработка оплаты…';
+    try {
+        const order = await api('/orders/' + pendingPayment.id + '/pay', { method: 'POST' });
+        form.reset();
+        form.hidden = true;
+        $('#payment-success-message').textContent = 'Заказ № ' + order.id + ' · ' + money(order.totalAmount);
+        $('#payment-success').hidden = false;
+        $('#payment-success button').focus();
+        if (currentPage === 'orders') await renderOrders();
+    } catch (error) {
+        errorElement.textContent = error.message;
+    } finally {
+        button.disabled = false;
+        if (pendingPayment) button.textContent = 'Оплатить ' + money(pendingPayment.amount);
+    }
+});
+$('#payment-dialog').addEventListener('close', () => {
+    $('#payment-form').reset();
+    pendingPayment = null;
+});
+
 document.addEventListener('click', event => {
     const close = event.target.closest('[data-close]');
     if (close) $('#' + close.dataset.close).close();
@@ -297,7 +434,7 @@ $('#account-button').addEventListener('click', () => currentUser ? location.hash
 $('#auth-switch').addEventListener('click', () => {
     authMode = authMode === 'login' ? 'register' : 'login';
     const register = authMode === 'register';
-    $('#auth-title').textContent = register ? 'Создать аккаунт' : 'С возвращением';
+    $('#auth-title').textContent = register ? 'Создать аккаунт' : 'Вход в аккаунт';
     $('#auth-submit').textContent = register ? 'Зарегистрироваться' : 'Войти';
     $('#auth-switch').textContent = register ? 'Войти' : 'Зарегистрироваться';
     $('#auth-switch-text').textContent = register ? 'Уже есть аккаунт?' : 'Ещё нет аккаунта?';
@@ -334,6 +471,7 @@ $('#logout-button').addEventListener('click', async () => {
     try {
         await api('/auth/logout', { method: 'POST' });
         currentUser = null; cart = { items: [], total: 0, count: 0 };
+        $('#payment-dialog').close();
         await refreshCsrf(); updateHeader();
         if (location.hash === '#catalog') await route(); else location.hash = 'catalog';
         toast('Вы вышли из аккаунта');
@@ -383,6 +521,8 @@ window.addEventListener('hashchange', route);
 
 async function init() {
     await refreshCsrf();
+    const assetsResponse = await fetch('/images/catalog.json');
+    if (assetsResponse.ok) catalogAssets = await assetsResponse.json();
     try { currentUser = await api('/auth/me'); } catch (error) { if (error.status !== 401) throw error; }
     await Promise.all([loadCategories(), loadCart()]);
     updateHeader();
