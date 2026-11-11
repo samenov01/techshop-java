@@ -2,6 +2,8 @@
 
 Проект № 5 из Java_Projects.docx. Приложение на Java Spring Boot и MySQL с интерфейсом на HTML, CSS и JavaScript.
 
+Репозиторий: [samenov01/techshop-java](https://github.com/samenov01/techshop-java).
+
 ## Запуск на этом Mac
 
 Дважды нажмите на `start.command` в папке проекта. Можно запустить из терминала:
@@ -145,4 +147,4 @@ mvn test
 
 Исходное задание: Java_Projects.docx. Для настройки безопасности использована [официальная документация Spring Security](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html). При разработке использовался ChatGPT (Codex): создание кода, интерфейса, тестов и инструкции. Результат проверен сборкой, тестами на MySQL и сценариями в Chrome. Перед защитой нужно самостоятельно разобраться в коде.
 
-История изменений хранится в Git. Публикация на GitHub не выполнена.
+История разработки сохранена в коммитах GitHub. Репозиторий приватный; для просмотра преподавателю нужен доступ.
