@@ -7,7 +7,7 @@
 Дважды нажмите на `start.command` в папке проекта. Можно запустить из терминала:
 
 ```sh
-cd /Users/diasss/programming_project/ecommerce-week3
+cd /Users/diasss/programming_project/project
 ./run-local.sh
 ```
 
@@ -100,6 +100,18 @@ java -jar target/shop-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo
 Для запуска без демонстрационных аккаунтов примените `schema.sql` вручную и не передавайте `--spring.profiles.active=demo`.
 
 ## Тесты
+
+На этом Mac дважды нажмите на `test.command`. Скрипт сам выберет Java и Maven, подключит MySQL или запустит его и создаст отдельную тестовую базу. Предварительно запускать магазин не требуется.
+
+Из терминала в папке проекта:
+
+```sh
+./test.command
+```
+
+Для одного набора тестов: `./test.command CatalogTest`. Для отдельной проверки: `./test.command 'ShopFlowTest#concurrentOrdersCannotOversellLastProduct'`.
+
+При успехе в конце появятся `BUILD SUCCESS` и «Все тесты прошли». Подробные результаты находятся в `target/surefire-reports`.
 
 Тесты используют отдельную базу MySQL. ShopFlowTest очищает все шесть таблиц этой базы до и после каждого сценария. Не указывайте адрес базы магазина в TEST_DB_URL.
 
