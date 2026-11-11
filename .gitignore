@@ -4,4 +4,6 @@
 *.iml
 target/
 .env
+.local/
+*.log
 ~$*.docx

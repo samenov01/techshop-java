@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -20,8 +21,12 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<ProductResponse> findAll() {
-        return productService.findAll();
+    public List<ProductResponse> findAll(@RequestParam(required = false) String search,
+                                         @RequestParam(required = false) Long categoryId,
+                                         @RequestParam(required = false) BigDecimal minPrice,
+                                         @RequestParam(required = false) BigDecimal maxPrice,
+                                         @RequestParam(defaultValue = "newest") String sort) {
+        return productService.search(search, categoryId, minPrice, maxPrice, sort);
     }
 
     @GetMapping("/{id}")

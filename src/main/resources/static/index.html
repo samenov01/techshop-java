@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="TechShop — компьютерные аксессуары для работы, учёбы и отдыха.">
+    <title>TechShop — ваш рабочий ритм</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/css/style.css">
+    <script defer src="/vendor/chart.umd.min.js"></script>
+    <script defer src="/js/app.js"></script>
+</head>
+<body>
+    <a class="skip-link" href="#main">К содержимому</a>
+    <header class="header">
+        <div class="container header-row">
+            <a class="brand" href="#catalog" aria-label="TechShop — каталог">techshop<span>.</span></a>
+            <nav aria-label="Главная навигация">
+                <a href="#catalog" data-nav="catalog">Каталог</a>
+                <a href="#orders" data-nav="orders">Мои заказы</a>
+                <a href="#admin" data-nav="admin" id="admin-link" hidden>Управление</a>
+            </nav>
+            <div class="header-actions">
+                <button class="account-button" id="account-button" type="button">Войти</button>
+                <button class="text-button" id="logout-button" type="button" hidden>Выйти</button>
+                <a class="cart-link" href="#cart" aria-label="Корзина">Корзина <span id="cart-count">0</span></a>
+            </div>
+        </div>
+    </header>
+    <main id="main" class="container" tabindex="-1">
+        <section id="catalog-page" class="page">
+            <div class="hero">
+                <div class="hero-copy"><p class="eyebrow">ДЛЯ РАБОТЫ, УЧЁБЫ И ОТДЫХА</p><h1>Ваше место.<br>Ваш ритм.</h1><p>Мыши, клавиатуры и наушники,<br>с которыми каждый день удобнее.</p><a class="button dark" href="#products-anchor">Выбрать своё <span aria-hidden="true">↗</span></a></div>
+                <div class="hero-art" aria-hidden="true"><div class="hero-circle"></div><img class="hero-keyboard" src="/images/keyboard.svg" alt=""><img class="hero-mouse" src="/images/mouse.svg" alt=""><span class="hero-note">МАЛЕНЬКИЕ ДЕТАЛИ.<br>БОЛЬШАЯ РАЗНИЦА.</span></div>
+            </div>
+            <div class="section-heading" id="products-anchor"><div><p class="eyebrow">НАЙДИТЕ ТО, ЧТО ПОДХОДИТ ВАМ</p><h2>Каталог товаров <span id="product-count" class="count-label"></span></h2></div></div>
+            <div class="catalog-layout">
+                <aside class="filters"><form id="filter-form"><h3>Фильтры</h3><label for="category-filter">Категория</label><select id="category-filter" name="categoryId"><option value="">Все категории</option></select><label>Цена, тг</label><div class="price-range"><input aria-label="Минимальная цена" name="minPrice" type="number" min="0" step="0.01" placeholder="От"><span>—</span><input aria-label="Максимальная цена" name="maxPrice" type="number" min="0" step="0.01" placeholder="До"></div><button class="button dark" type="submit">Применить</button><button class="text-button" type="reset">Сбросить фильтры</button></form><div class="filter-note"><span>01 / ПРОСТОЙ ВЫБОР</span><p>Актуальная цена и наличие — в каждой карточке.</p></div></aside>
+                <div class="catalog-content"><div class="catalog-toolbar"><form id="search-form" class="search"><input id="search-input" type="search" placeholder="Найти товар" aria-label="Поиск по названию"><button type="submit" aria-label="Найти">⌕</button></form><label class="sort-label"><span class="sr-only">Сортировка</span><select id="sort-select"><option value="newest">Сначала новые</option><option value="priceAsc">Сначала дешевле</option><option value="priceDesc">Сначала дороже</option><option value="nameAsc">По названию: А–Я</option><option value="nameDesc">По названию: Я–А</option></select></label></div><div id="products" class="product-grid" aria-live="polite"><p class="loading">Загружаем товары…</p></div></div>
+            </div>
+        </section>
+        <section id="cart-page" class="page" hidden><div class="page-heading"><p class="eyebrow">ВАШ ВЫБОР</p><h1>Корзина</h1><p>Проверьте товары перед оформлением заказа.</p></div><div id="cart-content"></div></section>
+        <section id="orders-page" class="page" hidden><div class="page-heading"><p class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</p><h1>Мои заказы</h1><p>Все покупки и их текущий статус в одном месте.</p></div><div id="orders-content"></div></section>
+        <section id="admin-page" class="page" hidden><div class="page-heading"><p class="eyebrow">TECHSHOP / УПРАВЛЕНИЕ</p><h1>Панель администратора</h1><p>Товары, заказы и продажи магазина.</p></div><div id="admin-content"></div></section>
+    </main>
+    <footer class="footer"><div class="container footer-row"><a class="brand" href="#catalog">techshop<span>.</span></a><p>Всё для вашего рабочего места.</p><span>Учебный интернет-магазин</span></div></footer>
+    <dialog id="auth-dialog"><div class="dialog-heading"><h2 id="auth-title">С возвращением</h2><button type="button" class="icon-button" data-close="auth-dialog" aria-label="Закрыть">×</button></div><p id="auth-subtitle" class="muted">Войдите, чтобы сохранить корзину и оформить заказ.</p><form id="auth-form"><label id="name-field" hidden>Имя<input name="name" autocomplete="name" maxlength="100"></label><label>Email<input name="email" type="email" autocomplete="username" maxlength="255" required></label><label>Пароль<input name="password" type="password" autocomplete="current-password" minlength="8" maxlength="60" required></label><p class="form-error" id="auth-error" role="alert"></p><button class="button dark full" type="submit" id="auth-submit">Войти</button></form><p class="auth-switch"><span id="auth-switch-text">Ещё нет аккаунта?</span> <button class="text-button" id="auth-switch" type="button">Зарегистрироваться</button></p></dialog>
+    <dialog id="product-dialog"><div class="dialog-heading"><h2 id="product-dialog-title">Добавить товар</h2><button type="button" class="icon-button" data-close="product-dialog" aria-label="Закрыть">×</button></div><form id="product-form"><input name="id" type="hidden"><label>Название<input name="name" maxlength="150" required></label><label>Категория<select name="categoryId" id="edit-category" required></select></label><label>Описание<textarea name="description" rows="3" maxlength="5000" required></textarea></label><div class="form-row"><label>Цена, тг<input name="price" type="number" min="0.01" max="9999999999.99" step="0.01" required></label><label>Остаток<input name="stock" type="number" min="0" max="2147483647" step="1" required></label></div><p class="form-error" id="product-error" role="alert"></p><button class="button dark full" type="submit">Сохранить товар</button></form></dialog>
+    <dialog id="category-dialog"><div class="dialog-heading"><h2>Категория</h2><button type="button" class="icon-button" data-close="category-dialog" aria-label="Закрыть">×</button></div><form id="category-form"><input name="id" type="hidden"><label>Название<input name="name" maxlength="100" required></label><p class="form-error" id="category-error" role="alert"></p><button class="button dark full" type="submit">Сохранить</button></form></dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

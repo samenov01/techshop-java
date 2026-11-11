@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.math.BigDecimal;
+import java.util.Locale;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 @Transactional(readOnly = true)
@@ -34,6 +37,36 @@ public class ProductService {
                 .map(this::toResponse).toList();
     }
 
+    public List<ProductResponse> search(String search, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, String sort) {
+        if (minPrice != null && minPrice.signum() < 0 || maxPrice != null && maxPrice.signum() < 0
+                || minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
+            throw new IllegalArgumentException("Проверьте диапазон цен");
+        }
+        Specification<Product> filter = (root, query, builder) -> builder.conjunction();
+        if (search != null && !search.isBlank()) {
+            String term = search.trim().toLowerCase(Locale.ROOT).replace("!", "!!").replace("%", "!%").replace("_", "!_");
+            filter = filter.and((root, query, builder) -> builder.like(builder.lower(root.get("name")), "%" + term + "%", '!'));
+        }
+        if (categoryId != null) {
+            filter = filter.and((root, query, builder) -> builder.equal(root.get("category").get("id"), categoryId));
+        }
+        if (minPrice != null) {
+            filter = filter.and((root, query, builder) -> builder.greaterThanOrEqualTo(root.get("price"), minPrice));
+        }
+        if (maxPrice != null) {
+            filter = filter.and((root, query, builder) -> builder.lessThanOrEqualTo(root.get("price"), maxPrice));
+        }
+        Sort order = switch (sort) {
+            case "priceAsc" -> Sort.by("price").ascending();
+            case "priceDesc" -> Sort.by("price").descending();
+            case "nameAsc" -> Sort.by("name").ascending();
+            case "nameDesc" -> Sort.by("name").descending();
+            case "newest" -> Sort.by("id").descending();
+            default -> throw new IllegalArgumentException("Неизвестная сортировка");
+        };
+        return productRepository.findAll(filter, order.and(Sort.by("id"))).stream().map(this::toResponse).toList();
+    }
+
     public ProductResponse findById(Long id) {
         return toResponse(getProduct(id));
     }
@@ -47,14 +80,16 @@ public class ProductService {
 
     @Transactional
     public ProductResponse update(Long id, ProductRequest request) {
-        Product product = getProduct(id);
+        Product product = productRepository.lockById(id)
+                .orElseThrow(() -> new NotFoundException("Товар не найден"));
         fillProduct(product, request);
         return toResponse(productRepository.saveAndFlush(product));
     }
 
     @Transactional
     public void delete(Long id) {
-        Product product = getProduct(id);
+        Product product = productRepository.lockById(id)
+                .orElseThrow(() -> new NotFoundException("Товар не найден"));
         if (cartItemRepository.existsByProductId(id) || orderItemRepository.existsByProductId(id)) {
             throw new ConflictException("Товар используется в корзине или заказе и не может быть удалён");
         }
