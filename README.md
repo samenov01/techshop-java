@@ -65,7 +65,7 @@ LOCAL_DB_PORT=33309 PORT=8081 ./run-local.sh
 
 ## Запуск на другом компьютере
 
-Нужны Java 17 или 21, Maven и MySQL 8.0.16 или новее. В архив не входят локальные инструменты из `.local`. macOS/Linux могут использовать `run-local.sh`, если команды `java`, `mvn`, `mysqld`, `mysql` и `mysqladmin` доступны в терминале.
+Нужны Java 17 или 21, Maven и MySQL 8.0.16 или новее. На другом компьютере локальные инструменты нужно установить отдельно. macOS/Linux могут использовать `run-local.sh`, если команды `java`, `mvn`, `mysqld`, `mysql` и `mysqladmin` доступны в терминале.
 
 Для работы с уже установленным сервером MySQL создайте базу:
 
@@ -119,18 +119,17 @@ mvn test
 
 - [Описание API](docs/api.md).
 - [Источники моделей и фотографий](docs/catalog-sources.md).
-- [Применение навыка Unslop](docs/unslop.md).
-- [Мини-корзина](docs/screenshots/mini-cart.png) и [окно оплаты](docs/screenshots/payment.png).
 - [Коллекция Postman](docs/shop.postman_collection.json).
 - [Описание базы](docs/database.md).
 - [ER-диаграмма](design/database.png).
-- [Результаты проверки](docs/verification.md).
 - `src/main/java/kz/student/shop`: controller, service, repository, model, dto, exception и config.
 - `src/main/resources/static`: интерфейс, иллюстрации SVG и локальная копия Chart.js.
 - `src/main/resources/schema.sql`: шесть таблиц с внешними ключами и ограничениями.
 - `src/test/java/kz/student/shop`: тесты.
 
-Отчёты week-1 и week-3 сохранены как история предыдущих этапов. Они описывают состояние проекта на момент соответствующей недели. Папка проекта оставлена с прежним названием ecommerce-week3.
+Навык Unslop установлен в `.agents/skills/unslop`.
+
+Папка `target` создаётся Maven при сборке. Рабочая база, Java, Maven и зависимости находятся в `.local`; эта папка не добавляется в Git.
 
 Исходное задание: Java_Projects.docx. Для настройки безопасности использована [официальная документация Spring Security](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html). При разработке использовался ChatGPT (Codex): создание кода, интерфейса, тестов и инструкции. Результат проверен сборкой, тестами на MySQL и сценариями в Chrome. Перед защитой нужно самостоятельно разобраться в коде.
 
