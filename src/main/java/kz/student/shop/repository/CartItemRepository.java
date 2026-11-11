@@ -1,0 +1,8 @@
+package kz.student.shop.repository;
+
+import kz.student.shop.model.CartItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CartItemRepository extends JpaRepository<CartItem, Long> {
+    boolean existsByProductId(Long productId);
+}
