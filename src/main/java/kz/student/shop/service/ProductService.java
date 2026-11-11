@@ -2,7 +2,6 @@ package kz.student.shop.service;
 
 import kz.student.shop.dto.ProductRequest;
 import kz.student.shop.dto.ProductResponse;
-import kz.student.shop.exception.ConflictException;
 import kz.student.shop.exception.NotFoundException;
 import kz.student.shop.model.Category;
 import kz.student.shop.model.Product;
@@ -22,18 +21,16 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final CartItemRepository cartItemRepository;
-    private final OrderItemRepository orderItemRepository;
 
     public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository,
-                          CartItemRepository cartItemRepository, OrderItemRepository orderItemRepository) {
+                          CartItemRepository cartItemRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.cartItemRepository = cartItemRepository;
-        this.orderItemRepository = orderItemRepository;
     }
 
     public List<ProductResponse> findAll() {
-        return productRepository.findAll(Sort.by("id")).stream()
+        return productRepository.findAllByActiveTrue(Sort.by("id")).stream()
                 .map(this::toResponse).toList();
     }
 
@@ -42,7 +39,7 @@ public class ProductService {
                 || minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
             throw new IllegalArgumentException("Проверьте диапазон цен");
         }
-        Specification<Product> filter = (root, query, builder) -> builder.conjunction();
+        Specification<Product> filter = (root, query, builder) -> builder.isTrue(root.get("active"));
         if (search != null && !search.isBlank()) {
             String term = search.trim().toLowerCase(Locale.ROOT).replace("!", "!!").replace("%", "!%").replace("_", "!_");
             filter = filter.and((root, query, builder) -> builder.like(builder.lower(root.get("name")), "%" + term + "%", '!'));
@@ -81,6 +78,7 @@ public class ProductService {
     @Transactional
     public ProductResponse update(Long id, ProductRequest request) {
         Product product = productRepository.lockById(id)
+                .filter(Product::isActive)
                 .orElseThrow(() -> new NotFoundException("Товар не найден"));
         fillProduct(product, request);
         return toResponse(productRepository.saveAndFlush(product));
@@ -89,16 +87,16 @@ public class ProductService {
     @Transactional
     public void delete(Long id) {
         Product product = productRepository.lockById(id)
+                .filter(Product::isActive)
                 .orElseThrow(() -> new NotFoundException("Товар не найден"));
-        if (cartItemRepository.existsByProductId(id) || orderItemRepository.existsByProductId(id)) {
-            throw new ConflictException("Товар используется в корзине или заказе и не может быть удалён");
-        }
-        productRepository.delete(product);
+        product.setActive(false);
+        cartItemRepository.deleteByProductId(id);
         productRepository.flush();
     }
 
     private Product getProduct(Long id) {
         return productRepository.findById(id)
+                .filter(Product::isActive)
                 .orElseThrow(() -> new NotFoundException("Товар не найден"));
     }
 

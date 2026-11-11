@@ -3,6 +3,7 @@ package kz.student.shop;
 import kz.student.shop.dto.*;
 import kz.student.shop.config.DemoData;
 import kz.student.shop.exception.ConflictException;
+import kz.student.shop.exception.NotFoundException;
 import kz.student.shop.model.*;
 import kz.student.shop.repository.*;
 import kz.student.shop.service.*;
@@ -258,6 +259,107 @@ class ShopFlowTest {
         assertThat(products.count()).isEqualTo(count);
         assertThat(saved.getStock()).isEqualTo(2);
         assertThat(saved.getPrice()).isEqualByComparingTo("19990.00");
+    }
+
+    @Test
+    void deletionRemovesProductFromAllCartsAndCatalog() throws Exception {
+        cart.add("one@test.local", new CartRequest(productId, 1));
+        cart.add("two@test.local", new CartRequest(productId, 1));
+        mvc.perform(delete("/api/products/{id}", productId).with(user("admin").roles("ADMIN")).with(csrf()))
+                .andExpect(status().isNoContent());
+        assertThat(cart.get("one@test.local").items()).isEmpty();
+        assertThat(cart.get("two@test.local").items()).isEmpty();
+        mvc.perform(get("/api/products")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
+        mvc.perform(get("/api/products/{id}", productId)).andExpect(status().isNotFound());
+        mvc.perform(post("/api/cart").with(user("one@test.local")).with(csrf()).contentType(APPLICATION_JSON)
+                        .content("{\"productId\":" + productId + ",\"quantity\":1}"))
+                .andExpect(status().isNotFound());
+        assertThatThrownBy(() -> productService.update(productId,
+                new ProductRequest("Удалённый товар", "Описание", BigDecimal.TEN, 1, categoryId)))
+                .isInstanceOf(NotFoundException.class);
+        assertThat(statistics.get().productCount()).isZero();
+    }
+
+    @Test
+    void deletionKeepsOrderHistoryAndAllowsCancellation() {
+        cart.add("one@test.local", new CartRequest(productId, 1));
+        var order = orderService.checkout("one@test.local");
+        productService.delete(productId);
+        var savedOrder = orderService.history("one@test.local").get(0);
+        assertThat(savedOrder.items().get(0).name()).isEqualTo("Последняя мышь");
+        assertThat(savedOrder.totalAmount()).isEqualByComparingTo("1250.50");
+        orderService.pay("one@test.local", order.id());
+        var cancelled = orderService.cancel("one@test.local", order.id());
+        assertThat(cancelled.paymentStatus()).isEqualTo("REFUNDED");
+        Product product = products.findById(productId).orElseThrow();
+        assertThat(product.isActive()).isFalse();
+        assertThat(product.getStock()).isEqualTo(1);
+        assertThat(productService.findAll()).isEmpty();
+    }
+
+    @Test
+    void deletedDemoProductDoesNotReturnOnRestart() {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                new DemoData(users, categories, products, encoder).run(null));
+        Product product = products.findByName("VXE Dragonfly R1 Pro").orElseThrow();
+        long count = products.countByActiveTrue();
+        productService.delete(product.getId());
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                new DemoData(users, categories, products, encoder).run(null));
+        assertThat(products.findByName(product.getName()).orElseThrow().isActive()).isFalse();
+        assertThat(products.countByActiveTrue()).isEqualTo(count - 1);
+    }
+
+    @Test
+    void concurrentDeleteAndCartAddDoNotLeaveDeletedProductInCart() throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            Future<?> add = pool.submit(() -> {
+                start.await(10, TimeUnit.SECONDS);
+                try { cart.add("one@test.local", new CartRequest(productId, 1)); }
+                catch (NotFoundException exception) { }
+                return null;
+            });
+            Future<?> remove = pool.submit(() -> {
+                start.await(10, TimeUnit.SECONDS);
+                productService.delete(productId);
+                return null;
+            });
+            start.countDown();
+            add.get(15, TimeUnit.SECONDS);
+            remove.get(15, TimeUnit.SECONDS);
+            assertThat(products.findById(productId).orElseThrow().isActive()).isFalse();
+            assertThat(cart.get("one@test.local").items()).isEmpty();
+        } finally { pool.shutdownNow(); }
+    }
+
+    @Test
+    void concurrentDeleteAndCheckoutKeepConsistentOrderAndStock() throws Exception {
+        cart.add("one@test.local", new CartRequest(productId, 1));
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            Future<Boolean> checkout = pool.submit(() -> {
+                start.await(10, TimeUnit.SECONDS);
+                try { orderService.checkout("one@test.local"); return true; }
+                catch (ConflictException exception) { return false; }
+            });
+            Future<?> remove = pool.submit(() -> {
+                start.await(10, TimeUnit.SECONDS);
+                productService.delete(productId);
+                return null;
+            });
+            start.countDown();
+            boolean ordered = checkout.get(15, TimeUnit.SECONDS);
+            remove.get(15, TimeUnit.SECONDS);
+            Product product = products.findById(productId).orElseThrow();
+            assertThat(product.isActive()).isFalse();
+            assertThat(product.getStock()).isEqualTo(ordered ? 0 : 1);
+            assertThat(orders.count()).isEqualTo(ordered ? 1 : 0);
+            assertThat(orderItems.count()).isEqualTo(ordered ? 1 : 0);
+            assertThat(cart.get("one@test.local").items()).isEmpty();
+        } finally { pool.shutdownNow(); }
     }
 
     @Test

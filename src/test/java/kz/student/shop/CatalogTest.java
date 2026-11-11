@@ -96,7 +96,8 @@ class CatalogTest {
         assertThat(saved.getPrice()).isEqualByComparingTo("3000.00");
         assertThat(saved.getCategory().getId()).isEqualTo(secondCategory.getId());
         mvc.perform(delete("/api/products/{id}", id).with(csrf())).andExpect(status().isNoContent());
-        assertThat(products.existsById(id)).isFalse();
+        assertThat(products.findById(id).orElseThrow().isActive()).isFalse();
+        mvc.perform(get("/api/products/{id}", id)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -179,7 +180,7 @@ class CatalogTest {
     }
 
     @Test
-    void cannotDeleteProductInCart() throws Exception {
+    void deletesProductFromCart() throws Exception {
         Product product = createProduct();
         CartItem item = new CartItem();
         item.setUser(createUser());
@@ -187,13 +188,13 @@ class CatalogTest {
         item.setQuantity(1);
         cartItems.saveAndFlush(item);
 
-        mvc.perform(delete("/api/products/{id}", product.getId()).with(csrf())).andExpect(status().isConflict());
-        assertThat(products.existsById(product.getId())).isTrue();
-        assertThat(cartItems.existsById(item.getId())).isTrue();
+        mvc.perform(delete("/api/products/{id}", product.getId()).with(csrf())).andExpect(status().isNoContent());
+        assertThat(products.findById(product.getId()).orElseThrow().isActive()).isFalse();
+        assertThat(cartItems.existsById(item.getId())).isFalse();
     }
 
     @Test
-    void cannotDeleteProductInOrder() throws Exception {
+    void deletesProductWithoutRemovingOrder() throws Exception {
         Product product = createProduct();
         Order order = new Order();
         order.setUser(createUser());
@@ -210,8 +211,8 @@ class CatalogTest {
         item.setUnitPrice(product.getPrice());
         orderItems.saveAndFlush(item);
 
-        mvc.perform(delete("/api/products/{id}", product.getId()).with(csrf())).andExpect(status().isConflict());
-        assertThat(products.existsById(product.getId())).isTrue();
+        mvc.perform(delete("/api/products/{id}", product.getId()).with(csrf())).andExpect(status().isNoContent());
+        assertThat(products.findById(product.getId()).orElseThrow().isActive()).isFalse();
         assertThat(orderItems.existsById(item.getId())).isTrue();
     }
 

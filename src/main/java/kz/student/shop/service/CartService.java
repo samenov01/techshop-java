@@ -30,7 +30,8 @@ public class CartService {
     @Transactional
     public CartResponse add(String email, CartRequest request) {
         User user = lockUser(email);
-        Product product = products.findById(request.productId()).orElseThrow(() -> new NotFoundException("Товар не найден"));
+        Product product = products.lockById(request.productId()).filter(Product::isActive)
+                .orElseThrow(() -> new NotFoundException("Товар не найден"));
         CartItem item = items.findByUserIdAndProductId(user.getId(), product.getId()).orElseGet(CartItem::new);
         long quantity = (long) item.getQuantity() + request.quantity();
         if (quantity > product.getStock() || quantity > 10000) {
@@ -46,10 +47,12 @@ public class CartService {
     @Transactional
     public CartResponse update(String email, Long productId, int quantity) {
         User user = lockUser(email);
+        Product product = products.lockById(productId).filter(Product::isActive)
+                .orElseThrow(() -> new NotFoundException("Товар не найден"));
         CartItem item = items.findByUserIdAndProductId(user.getId(), productId)
                 .orElseThrow(() -> new NotFoundException("Товар не найден в корзине"));
-        if (quantity > item.getProduct().getStock()) {
-            throw new ConflictException("На складе осталось: " + item.getProduct().getStock());
+        if (quantity > product.getStock()) {
+            throw new ConflictException("На складе осталось: " + product.getStock());
         }
         item.setQuantity(quantity);
         items.flush();

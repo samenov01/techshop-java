@@ -41,6 +41,9 @@ public class OrderService {
         // Один порядок блокировки товаров предотвращает взаимную блокировку двух заказов.
         for (CartItem row : basket) {
             Product product = products.lockById(row.getProduct().getId()).orElseThrow(() -> new NotFoundException("Товар не найден"));
+            if (!product.isActive()) {
+                throw new ConflictException("Товар «" + product.getName() + "» удалён из каталога");
+            }
             if (row.getQuantity() > product.getStock()) {
                 throw new ConflictException("Недостаточно товара «" + product.getName() + "». Осталось: " + product.getStock());
             }

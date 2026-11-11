@@ -32,7 +32,7 @@ public class StatisticsService {
                 days.put(date, days.get(date).add(order.getTotalAmount()));
             }
         }
-        return new Summary(all.size(), products.count(), revenue,
+        return new Summary(all.size(), products.countByActiveTrue(), revenue,
                 days.entrySet().stream().map(day -> new Day(day.getKey(), day.getValue())).toList());
     }
 

@@ -256,7 +256,9 @@ async function action(button) {
     }
     if (!currentUser) return showAuth();
     if (['delete-product', 'delete-category', 'cancel'].includes(name) || name === 'status' && value === 'CANCELLED') {
-        if (!confirm(name.startsWith('delete') ? 'Удалить эту запись?' : 'Отменить заказ? Товары вернутся на склад.')) return;
+        const message = name === 'delete-product' ? 'Удалить товар из каталога и корзин? История заказов сохранится.'
+            : name === 'delete-category' ? 'Удалить эту категорию?' : 'Отменить заказ? Товары вернутся на склад.';
+        if (!confirm(message)) return;
     }
     button.disabled = true;
     try {
@@ -294,6 +296,7 @@ async function action(button) {
         }
         if (name === 'delete-product' || name === 'delete-category') {
             await api('/' + (name === 'delete-product' ? 'products' : 'categories') + '/' + id, { method: 'DELETE' });
+            if (name === 'delete-product') await loadCart();
             toast('Запись удалена'); await renderAdmin();
         }
     } catch (error) {

@@ -19,10 +19,23 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT NOT NULL,
     price DECIMAL(12, 2) NOT NULL,
     stock INT NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT fk_product_category FOREIGN KEY (category_id) REFERENCES categories(id),
     CONSTRAINT chk_product_price CHECK (price > 0),
     CONSTRAINT chk_product_stock CHECK (stock >= 0)
 ) ENGINE=InnoDB;
+
+SET @shop_product_migration = IF(
+    EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = DATABASE() AND table_name = 'products' AND column_name = 'active'
+    ),
+    'SELECT 1',
+    'ALTER TABLE products ADD COLUMN active BOOLEAN NOT NULL DEFAULT TRUE'
+);
+PREPARE shop_product_migration FROM @shop_product_migration;
+EXECUTE shop_product_migration;
+DEALLOCATE PREPARE shop_product_migration;
 
 CREATE TABLE IF NOT EXISTS cart_items (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
